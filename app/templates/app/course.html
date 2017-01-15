@@ -1,0 +1,65 @@
+﻿{% extends "app/layout.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+<h2>Course/Group - {{ group.name }}</h2>
+<hr/>
+<div class="row">
+    <div class="col-sm-4">
+        <h3>Statistics</h3>
+        <p>
+            This course has a total of 0 attempts, where 0 of them were successful.
+        </p>
+        <hr/>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ group.language.name }}</h3>
+            </div>
+            <div class="panel-body">
+                This course/problem group uses {{ group.language.name }} as its primary programming language. If you haven't used {{ group.language.name }} before, here are some links to get started:<br/>
+                <ul>
+                    <li><a href="{{group.language.download_link}}">Download {{ group.language.name}} here</a></li>
+                    <li><a href="{{group.language.docs}}">{{ group.language.name}} documentation</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-8">
+        <h3>Problems</h3>
+        {% for problem in group.problems.all %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    {{ problem.name }}
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <h2 class="text-center">0<br/><small>Attempts</small></h2>
+                        </div>
+                        <div class="col-xs-4">
+                            <h2 class="text-center">0<br/><small>Users</small></h2>
+                        </div>
+                        <div class="col-xs-4">
+                            <h2 class="text-center">0<br/><small>Sockerkaka</small></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer text-right">
+                    <a href="#" class="btn btn-primary">Go to problem</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row">
+{% for pg in groups %}
+    <div class="col-sm-6">
+        <div class="well">
+            <h4>{{ pg.name }} <small>{{ pg.language.name }}</small></h4>
+            <p class="lead">{{ pg.problems | length }} problems</p>
+            <p><a class="btn btn-primary" href="{% url 'course' pg.id %}">Go to course/group</a></p>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

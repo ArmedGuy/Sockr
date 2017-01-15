@@ -1,0 +1,16 @@
+﻿{% extends "app/layout.html" %}
+{% block title %}Courses/Problem groups{% endblock %}
+{% block content %}
+<h2>Courses and problem groups</h2>
+<div class="row">
+{% for pg in groups %}
+    <div class="col-sm-6">
+        <div class="well">
+            <h4>{{ pg.name }} <small>{{ pg.language.name }}</small></h4>
+            <p class="lead">{{ pg.problems.all | length }} problems</p>
+            <p><a class="btn btn-primary" href="{% url 'course' pg.id %}">Go to course/group</a></p>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+﻿{% extends "app/layout.html" %}
+{% block title %}{{ problem.name }}{% endblock %}
+{% block content %}
+<h2>{{ problem.group.name }} - {{ problem.name }}</h2>
+<hr/>
+<div class="row">
+    <div class="col-sm-4">
+        <h3>Statistics</h3>
+        <p>
+            This problem has a total of 0 attempts, where 0 of them were successful.
+        </p>
+        <hr/>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ problem.group.language.name }}</h3>
+            </div>
+            <div class="panel-body">
+                This problem uses {{ problem.group.language.name }} as its primary programming language. If you haven't used {{ problem.group.language.name }} before, here are some links to get started:<br/>
+                <ul>
+                    <li><a href="{{ problem.group.language.download_link}}">Download {{ problem.group.language.name}} here</a></li>
+                    <li><a href="{{ problem.group.language.docs}}">{{ problem.group.language.name}} documentation</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-8">
+        <h3>Description</h3>
+        {{ problem.description }}
+        <hr>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+{% for pg in groups %}
+    <div class="col-sm-6">
+        <div class="well">
+            <h4>{{ pg.name }} <small>{{ pg.language.name }}</small></h4>
+            <p class="lead">{{ pg.problems | length }} problems</p>
+            <p><a class="btn btn-primary" href="{% url 'course' pg.id %}">Go to course/group</a></p>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}
