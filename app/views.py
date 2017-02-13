@@ -2,7 +2,7 @@
 Definition of views.
 """
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponseRedirect
 from django.template import RequestContext
 from datetime import datetime
@@ -54,10 +54,35 @@ class CourseView(TemplateView):
 class ProblemView(TemplateView):
     template_name = "app/problem.html"
     def get(self, request, *args, **kwargs):
+        submissions = []
+        if request.user.is_authenticated:
+            submissions = Submission.objects.filter(submitter__id = request.user.id).order_by('-submitted_time')
         return render(request, self.template_name, {
-            'problem': Problem.objects.get(id=kwargs['problem'])
+            'problem': Problem.objects.get(id=kwargs['problem']),
+            'submissions': submissions
         })
-        
+
+class SubmitView(TemplateView):
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            problem = Problem.objects.get(id=kwargs['problem'])
+            code = request.POST.get("content", "")
+            
+            s = Submission(problem = problem, submitter = request.user, state = 'submitted')
+            s.test_code = code
+            s.save()
+            return redirect('submission', s.id)
+        else:
+            return redirect('/login')
+
+
+class SubmissionView(TemplateView):
+    template_name = "app/submission.html"
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {
+            'submission': Submission.objects.get(id=kwargs['submission']),
+        })
+
 def home(request):
     """Renders the home page."""
     assert isinstance(request, HttpRequest)

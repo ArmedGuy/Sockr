@@ -1,0 +1,61 @@
+﻿{% extends "app/layout.html" %}
+{% block title %}Submission #{{submission.id}} - {{ submission.problem.name }}{% endblock %}
+{% load markdown_deux_tags %}
+{% load humanize %}
+{% block content %}
+<h2><a href="{% url 'course' submission.problem.group.id %}">{{submission.problem.group.name }}</a> - <a href="{% url 'problem' submission.problem.id %}">{{ submission.problem.name }}</a> | Submission #{{submission.id}}</h2>
+<hr/>
+<div class="panel panel-default">
+    <div class="row">
+        <div class="col-sm-4 text-center">
+            <h3>{{ submission.get_html_state }}<br/><small>State</small></h3>
+        </div>
+        <div class="col-sm-4 text-center">
+            <h3>{{ submission.submitted_time|naturaltime}}<br/><small>Submitted</small></h3>
+        </div>
+        <div class="col-sm-4 text-center">
+            <h3>{{ submission.submitter }}<br/><small>User</small></h3>
+        </div>
+    </div>
+</div>
+{% if submission.thrown_error %}
+<div class="panel panel-danger">
+    <div class="panel-heading">
+        {{submission.thrown_error.key}} - {{ submission.thrown_error.get_type_display }} on line {{ submission.thrown_error_line }}
+    </div>
+    <div class="panel-body">
+        <h5></h5>
+        {{ submission.thrown_error.description|markdown }}
+        <hr/>
+        <pre>{{ submission.thrown_error_raw }}</pre>
+    </div>
+    <div class="panel-footer">
+        <a href="{{ submission.thrown_error.read_more_link }}" class="btn btn-default">Read more about this</a>
+    </div>
+</div>
+{% endif %}
+{% if submission.problem.show_output and submission.output_log|length %}
+Output
+<div id="outputEditor" style="height: 500px; border: 2px solid #ddd">{{submission.output_log}}</div>
+{% endif %}
+{% if user.is_authenticated and user.id == submission.submitter.id or user.is_staff %}
+<h3>Submitted code</h3> 
+<div id="editor" style="height: 500px; border: 2px solid #ddd">{{submission.test_code}}</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+{% if user.is_authenticated %}
+    <script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/{{submission.problem.group.language.ace_name}}");
+    editor.setReadOnly(true);
+    {% if submission.problem.show_output %}
+    var output = ace.edit("outputEditor");
+    output.setTheme("ace/theme/monokai");
+    output.setReadOnly(true);
+    {% endif %}
+    </script>
+{% endif %}
+{% endblock %}

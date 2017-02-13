@@ -64,6 +64,7 @@
     <Content Include="app\templates\app\course.html" />
     <Content Include="app\templates\app\courses.html" />
     <Content Include="app\templates\app\problem.html" />
+    <Content Include="app\templates\app\submission.html" />
     <Content Include="requirements.txt" />
     <Content Include="db.sqlite3" />
     <Content Include="app\static\app\content\bootstrap.css" />

@@ -1,16 +1,67 @@
 ﻿{% extends "app/layout.html" %}
 {% block title %}{{ problem.name }}{% endblock %}
+{% load markdown_deux_tags %}
 {% block content %}
 <h2>{{ problem.group.name }} - {{ problem.name }}</h2>
 <hr/>
 <div class="row">
-    <div class="col-sm-4">
+    <div class="col-sm-9">
+        <div class="markdown">
+        {{ problem.description|markdown }}
+        </div>
+        <hr>
+        {% if user.is_authenticated %}
+        <h3>My submissions</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if not submissions|length %}
+                <tr><td colspan="3">No submissions yet</td></tr>
+                {% endif %}
+                {% for s in submissions %}
+                <tr>
+                    <td><a href="{% url 'submission' s.id %}">#{{ s.id }}</a></td>
+                    <td>{{ s.submitted_time }}</td>
+                    <td>{{ s.get_html_state }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a name="submit"></a>
+        <h3>Submit a solution</h3>
+        <div id="editor" style="height: 500px; border: 2px solid #ddd"></div>
+        <br />
+        <div class="row">
+            <div class="col-xs-5">
+                <form id="submit_code" method="post" action="{% url 'submit' problem.id %}">
+                    <input type="hidden" id="editor_posted" name="content" />     
+                     {% csrf_token %}   
+                    <button class="btn btn-success btn-block">Submit code</button>
+                </form>
+            </div>
+            <div class="col-xs-2"><h3 class="text-center" style="margin-top:0px;">or</h3></div>
+            <div class="col-xs-5">
+                <input type="file" id="uploadCode" style="display: none" />
+                <button class="btn btn-info btn-block" id="uploadCodeBtn">Import file</button>
+            </div>
+        </div>
+        
+        {% endif %}
+    </div>
+     <div class="col-sm-3">
+        <a href="#submit" class="btn btn-success btn-block">Submit</a>
         <h3>Statistics</h3>
         <p>
             This problem has a total of 0 attempts, where 0 of them were successful.
         </p>
         <hr/>
-        <div class="panel panel-primary">
+        <div class="panel panel-warning">
             <div class="panel-heading">
                 <h3 class="panel-title">{{ problem.group.language.name }}</h3>
             </div>
@@ -23,31 +74,30 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-8">
-        <h3>Description</h3>
-        {{ problem.description }}
-        <hr>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Submitted</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
 </div>
-
-<div class="row">
-{% for pg in groups %}
-    <div class="col-sm-6">
-        <div class="well">
-            <h4>{{ pg.name }} <small>{{ pg.language.name }}</small></h4>
-            <p class="lead">{{ pg.problems | length }} problems</p>
-            <p><a class="btn btn-primary" href="{% url 'course' pg.id %}">Go to course/group</a></p>
-        </div>
-    </div>
-{% endfor %}
-</div>
+{% endblock %}
+{% block scripts %}
+{% if user.is_authenticated %}
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/{{problem.group.language.ace_name}}");
+        $("#submit_code").submit(function() {
+            $("#editor_posted").val(editor.getValue());
+        });
+        function getBase64Part(data) {
+            return data.split("base64,")[1];
+        }
+        $("#uploadCode").change(function() {
+            reader = new FileReader();
+            reader.onload = function(e) {
+                editor.setValue(atob(getBase64Part(e.target.result)));
+            };
+            reader.readAsDataURL(this.files[0]);
+        });
+        $("#uploadCodeBtn").click(function() {
+            $("#uploadCode").click();
+        });
+    </script>
+{% endif %}
 {% endblock %}

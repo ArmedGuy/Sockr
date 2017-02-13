@@ -31,6 +31,15 @@ urlpatterns = [
     url(r'^course/(?P<group>[0-9]+)/$',
         app.views.CourseView.as_view(),
         name='course'),
+    url(r'^problem/(?P<problem>[0-9]+)/$',
+        app.views.ProblemView.as_view(),
+        name='problem'),
+    url(r'^problem/(?P<problem>[0-9]+)/submit/$',
+        app.views.SubmitView.as_view(),
+        name='submit'),
+    url(r'^submission/(?P<submission>[0-9]+)/$',
+        app.views.SubmissionView.as_view(),
+        name='submission'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
