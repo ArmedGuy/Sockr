@@ -3,7 +3,7 @@ Definition of views.
 """
 
 from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect, Http404, JsonResponse
 from django.template import RequestContext
 from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
@@ -11,6 +11,7 @@ from django.views.generic import TemplateView
 import urllib.request
 from lxml import etree
 from app.models import *
+import traceback
 
 class LoginView(TemplateView):
     def get(self, request, *args, **kwargs):
@@ -82,6 +83,44 @@ class SubmissionView(TemplateView):
         return render(request, self.template_name, {
             'submission': Submission.objects.get(id=kwargs['submission']),
         })
+
+class ApiSubmissionView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        key = request.GET.get("key", False)
+        count = request.GET.get("count", 1)
+        if not key:
+            raise Http404()
+        try:
+            runner = Runner.objects.get(secret_key=key)
+            r_subs = runner.submissions.filter(state='testing')
+            submissions = []
+            if len(r_subs):
+                for s in r_subs:
+                    if count == 0:
+                        break
+                    count -= 1
+                    s.started_time = datetime.now()
+                    s.save()
+                    submissions.append(s.to_json())
+            else:
+                for s in Submission.objects.filter(problem__in=runner.problems.all(), state='submitted'):
+                    if count == 0:
+                        break
+                    count -= 1
+                    s.state = 'testing'
+                    s.runner = runner
+                    s.started_time = datetime.now()
+                    s.save()
+                    submissions.append(s.to_json())
+            return JsonResponse(submissions, safe = False)
+        except:
+            traceback.print_exc()
+            raise Http404()
+        
+
+class ApiSubmissionReportView(TemplateView):
+    def post(self, request, *args, **kwargs):
+        pass
 
 def home(request):
     """Renders the home page."""

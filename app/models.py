@@ -30,7 +30,12 @@ class Problem(models.Model):
     show_output = models.BooleanField(default = True, help_text='Decides if test output should be show in a submission.')
     group = models.ForeignKey(ProblemGroup, related_name="problems", verbose_name="Course/Problem Group")
     test_key = models.CharField("Test suite name", max_length=64, help_text='The name of the test on the test server that this problem will use')
-
+    
+    def to_json(self):
+        return {
+                'id': self.id,
+                'test_key': self.test_key
+            }
     def __str__(self):
         return self.name
 
@@ -53,6 +58,13 @@ class Error(models.Model):
     def __unicode__(self):
         return self.__str__()
     
+class Runner(models.Model):
+    name = models.CharField(max_length=64)
+    secret_key = models.CharField(max_length=256, unique=True)
+    problems = models.ManyToManyField(Problem, related_name = 'problems')
+
+    def __str__(self):
+        return "%s" % self.name
 
 SUBMISSION_STATES = (
     ('submitted', 'Submitted'),
@@ -67,11 +79,20 @@ class Submission(models.Model):
     started_time = models.DateTimeField(blank = True, null = True)
     finished_time = models.DateTimeField(blank = True, null = True)
     state = models.CharField(max_length=32, choices=SUBMISSION_STATES)
-    test_code = models.TextField()
+    test_code = models.TextField(blank=True)
     output_log = models.TextField(blank = True)
-    thrown_error = models.ForeignKey(Error, null = True, default = None)
+    thrown_error = models.ForeignKey(Error, null = True, blank=True, default = None)
     thrown_error_raw = models.TextField(blank = True)
     thrown_error_line = models.IntegerField(blank = True, default = 0)
+    runner = models.ForeignKey(Runner, related_name="submissions")
+
+    def to_json(self):
+        return {
+                'id': self.id,
+                'title': str(self),
+                'problem': self.problem.to_json(),
+                'test_code': self.test_code
+            }
 
     def __str__(self):
         return "#%d: %s - %s (%s)" % (self.id, self.problem.name, self.problem.group.name, self.submitter.username)
@@ -87,3 +108,6 @@ class Submission(models.Model):
         elif self.state == 'failed':
             html = "<span class='text-danger'><b>Failed</b></span>"
         return mark_safe(html)
+
+
+    

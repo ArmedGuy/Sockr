@@ -25,3 +25,4 @@ class ProblemAdmin(ModelAdmin):
 admin.site.register(Problem, ProblemAdmin)
 admin.site.register(Error)
 admin.site.register(Submission)
+admin.site.register(Runner)

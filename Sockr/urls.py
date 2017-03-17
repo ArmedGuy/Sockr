@@ -41,6 +41,13 @@ urlpatterns = [
         app.views.SubmissionView.as_view(),
         name='submission'),
 
+    url(r'^api/submissions/$',
+        app.views.ApiSubmissionView.as_view(),
+        name='api_submissions'),
+    url(r'^api/submission/(?P<submission>[0-9]+)/report/$',
+        app.views.ApiSubmissionReportView.as_view(),
+        name='api_submission_report'),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
