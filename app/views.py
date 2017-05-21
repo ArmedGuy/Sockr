@@ -2,6 +2,7 @@
 Definition of views.
 """
 
+import json
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponseRedirect, Http404, JsonResponse
 from django.template import RequestContext
@@ -120,7 +121,17 @@ class ApiSubmissionView(TemplateView):
 
 class ApiSubmissionReportView(TemplateView):
     def post(self, request, *args, **kwargs):
-        pass
+        key = request.GET.get("key", False)
+        if not key:
+            raise Http404()
+        try:
+            runner = Runner.objects.get(secret_key=key)
+            json_data = json.loads(request.body)
+            submission = Submission.objects.filter(pk=kwargs['submission'], runner=runner).update(**json_data)
+            return "", 200
+        except:
+            traceback.print_exc()
+            raise Http404()
 
 def home(request):
     """Renders the home page."""
