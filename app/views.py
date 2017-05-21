@@ -127,6 +127,7 @@ class ApiSubmissionReportView(TemplateView):
         try:
             runner = Runner.objects.get(secret_key=key)
             json_data = json.loads(request.body)
+            json_data['finished_time'] = datetime.now()
             submission = Submission.objects.filter(pk=kwargs['submission'], runner=runner).update(**json_data)
             return "", 200
         except:

@@ -4,6 +4,7 @@ Definition of urls for Sockr.
 
 from datetime import datetime
 from django.conf.urls import url
+from django.views.decorators.csrf import csrf_exempt
 import django.contrib.auth.views
 
 import app.forms
@@ -45,7 +46,7 @@ urlpatterns = [
         app.views.ApiSubmissionView.as_view(),
         name='api_submissions'),
     url(r'^api/submission/(?P<submission>[0-9]+)/report/$',
-        app.views.ApiSubmissionReportView.as_view(),
+        csrf_exempt(app.views.ApiSubmissionReportView.as_view()),
         name='api_submission_report'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
