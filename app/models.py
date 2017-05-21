@@ -84,7 +84,7 @@ class Submission(models.Model):
     thrown_error = models.ForeignKey(Error, null = True, blank=True, default = None)
     thrown_error_raw = models.TextField(blank = True)
     thrown_error_line = models.IntegerField(blank = True, default = 0)
-    runner = models.ForeignKey(Runner, related_name="submissions")
+    runner = models.ForeignKey(Runner, related_name="submissions", null = True)
 
     def to_json(self):
         return {
