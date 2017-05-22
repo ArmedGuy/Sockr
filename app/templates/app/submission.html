@@ -18,7 +18,7 @@
         </div>
     </div>
 </div>
-{% if submission.thrown_error %}
+{% if submission.thrown_error or submission.thrown_error_raw %}
 <div class="panel panel-danger">
     <div class="panel-heading">
         {{submission.thrown_error.key}} - {{ submission.thrown_error.get_type_display }} on line {{ submission.thrown_error_line }}

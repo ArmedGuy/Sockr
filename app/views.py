@@ -9,6 +9,7 @@ from django.template import RequestContext
 from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.views.generic import TemplateView
+from django.db.models import Q
 import urllib.request
 from lxml import etree
 from app.models import *
@@ -126,9 +127,26 @@ class ApiSubmissionReportView(TemplateView):
             raise Http404()
         try:
             runner = Runner.objects.get(secret_key=key)
+            submission = Submission.objects.get(pk=kwargs['submission'], runner=runner)
             json_data = json.loads(request.body)
             json_data['finished_time'] = datetime.now()
-            submission = Submission.objects.filter(pk=kwargs['submission'], runner=runner).update(**json_data)
+            if json_data.get("thrown_error"):
+                try:
+                    err = Error.objects.get(Q(key=json_data['thrown_error']), Q(language=submission.problem.group.language) | Q(submission.problem))
+                    json_data['thrown_error'] = err.id
+                except:
+                    err = None
+                    if(json_data['thrown_error_type'] == "runtime" or json_data['thrown_error_type'] == "compile"):
+                        err = Error(language=submission.problem.group.language, key=json_data['thrown_error'])
+                        err.description = json_data.get("thrown_error_desc", "The program failed to execute")
+                        err.read_more_link = "https://google.com/search?q={}+{}".format(submission.problem.group.language, json_data['thrown_error'])                        
+                    if(json_data['thrown_error_type'] == "program"):
+                        err = Error(problem=submission.problem, key=json_data['thrown_error'])
+                        err.description = json_data.get("thrown_error_desc", "The program produced an incorrect value")
+                        err.read_more_link = "/problem/{}".format(submission.problem.id)
+                    err.save()
+                    json_data['thrown_error'] = err.id
+            Submission.objects.filter(pk=submission.id, runner=runner).update(**json_data)
             return "", 200
         except:
             traceback.print_exc()
