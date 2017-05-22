@@ -137,11 +137,11 @@ class ApiSubmissionReportView(TemplateView):
                 except:
                     err = None
                     if(json_data['thrown_error_type'] == "runtime" or json_data['thrown_error_type'] == "compile"):
-                        err = Error(language=submission.problem.group.language, key=json_data['thrown_error'])
+                        err = Error(language=submission.problem.group.language, key=json_data['thrown_error'], type=json_data['thrown_error_type'])
                         err.description = json_data.get("thrown_error_desc", "The program failed to execute")
                         err.read_more_link = "https://google.com/search?q={}+{}".format(submission.problem.group.language, json_data['thrown_error'])                        
                     if(json_data['thrown_error_type'] == "program"):
-                        err = Error(problem=submission.problem, key=json_data['thrown_error'])
+                        err = Error(problem=submission.problem, key=json_data['thrown_error'], type=json_data['thrown_error_type'])
                         err.description = json_data.get("thrown_error_desc", "The program produced an incorrect value")
                         err.read_more_link = "/problem/{}".format(submission.problem.id)
                     err.save()
