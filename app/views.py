@@ -146,6 +146,8 @@ class ApiSubmissionReportView(TemplateView):
                         err.read_more_link = "/problem/{}".format(submission.problem.id)
                     err.save()
                     json_data['thrown_error'] = err.id
+            del json_data['thrown_error_type']
+            del json_data['thrown_error_desc']
             Submission.objects.filter(pk=submission.id, runner=runner).update(**json_data)
             return "", 200
         except:
