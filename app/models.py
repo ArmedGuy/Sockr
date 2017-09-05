@@ -61,7 +61,7 @@ class Error(models.Model):
 class Runner(models.Model):
     name = models.CharField(max_length=64)
     secret_key = models.CharField(max_length=256, unique=True)
-    problems = models.ManyToManyField(Problem, related_name = 'problems')
+    problems = models.ManyToManyField(Problem, related_name = 'problems', blank=True)
 
     def __str__(self):
         return "%s" % self.name

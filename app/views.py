@@ -128,9 +128,9 @@ class ApiSubmissionReportView(TemplateView):
         try:
             runner = Runner.objects.get(secret_key=key)
             submission = Submission.objects.get(pk=kwargs['submission'], runner=runner)
-            json_data = json.loads(request.body)
+            json_data = json.loads(request.body.decode('utf-8'))
             json_data['finished_time'] = datetime.now()
-            if json_data.get("thrown_error"):
+            if "thrown_error" in json_data:
                 try:
                     err = Error.objects.get(Q(key=json_data['thrown_error']), Q(language=submission.problem.group.language) | Q(submission.problem))
                     json_data['thrown_error'] = err.id
@@ -146,9 +146,9 @@ class ApiSubmissionReportView(TemplateView):
                         err.read_more_link = "/problem/{}".format(submission.problem.id)
                     err.save()
                     json_data['thrown_error'] = err.id
-            if json_data.get("thrown_error_type"):
+            if "thrown_error_type" in json_data:
                 del json_data['thrown_error_type']
-            if json_data.get("thrown_error_desc"):
+            if "thrown_error_desc" in json_data:
                 del json_data['thrown_error_desc']
             Submission.objects.filter(pk=submission.id, runner=runner).update(**json_data)
             return "", 200
