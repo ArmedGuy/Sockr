@@ -1,50 +1,32 @@
 {% extends "app/layout.html" %}
-
+{% block title%}Sign in{% endblock %}
 {% block content %}
 
-<h2>{{ title }}</h2>
+<h2>Sign in</h2>
+<hr/>
 <div class="row">
-    <div class="col-md-8">
-        <section id="loginForm">
-            <form action="." method="post" class="form-horizontal">
-                {% csrf_token %}
-                <h4>Use a local account to log in.</h4>
-                <hr />
-                <div class="form-group">
-                    <label for="id_username" class="col-md-2 control-label">User name</label>
-                    <div class="col-md-10">
-                        {{ form.username }}
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="id_password" class="col-md-2 control-label">Password</label>
-                    <div class="col-md-10">
-                        {{ form.password }}
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-md-offset-2 col-md-10">
-                        <input type="hidden" name="next" value="/" />
-                        <input type="submit" value="Log in" class="btn btn-default" />
-                    </div>
-                </div>
-                {% if form.errors %}
-                <p class="validation-summary-errors">Please enter a correct user name and password.</p>
-                {% endif %}
-            </form>
-        </section>
+    <div class="col-sm-6 text-center">
+	    <h3>Sign in via LTU</h3>
+	    <p>Sign in using your student or staff user at Luleå University of Technology.</p>
+	    <a href="/login/ltu" class="btn btn-large btn-primary visible-xs-inline">Sign in via LTU</a>
     </div>
-    <div class="col-md-4">
-        <section id="socialLoginForm"></section>
+    <div class="col-sm-6 text-center">
+	    <h3>Sign in via LUDD</h3>
+	    <p>Sign in using your member account at LUDD, Luleå Academic Computer Society.<br/>
+	    LUDD is the maintainer of the Sockerkaka system, and you can become a member and access all benefits for only 100kr per year. Read more <a href="http://www.ludd.ltu.se">here</a>.
+	    </p>
+	    <a href="/login/ludd" class="btn btn-large btn-primary visible-xs-inline">Sign in via LUDD</a>
     </div>
+</div>
+<div class="row hide-xs text-center">
+	<div class="col-sm-6">
+	    <a href="/login/ltu" class="btn btn-large btn-primary">Sign in via LTU</a>
+	</div>
+	<div class="col-sm-6">
+	    <a href="/login/ludd" class="btn btn-large btn-primary">Sign in via LUDD</a>
+	</div>
 </div>
 
 {% endblock %}
 
 
-{% block scripts %}
-
-    {% load staticfiles %}
-<script src="{% static 'app/scripts/jquery.validate.min.js' %}"></script>
-
-{% endblock %}

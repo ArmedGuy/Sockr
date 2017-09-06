@@ -17,17 +17,48 @@ from app.models import *
 import traceback
 
 class LoginView(TemplateView):
+    template_name = "app/login.html"
     def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {})
+
+class LtuLoginView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        casEndpoint = "https://weblogon.ltu.se/cas"
         ticket = request.GET.get("ticket")
-        service = "http://%s/login" % request.get_host()
+        service = "http://%s/login/ltu" % request.get_host()
         if not ticket:
-            return HttpResponseRedirect("https://weblogon.ltu.se/cas/login?service=%s" % service)
+            return HttpResponseRedirect("%s/login?service=%s" % (casEndpoint, service))
         else:
-            res = urllib.request.urlopen("https://weblogon.ltu.se/cas/serviceValidate?ticket=%s&service=%s" % (ticket, service))
+            res = urllib.request.urlopen("%s/serviceValidate?ticket=%s&service=%s" % (casEndpoint, ticket, service))
             tree = etree.parse(res)
             if tree.getroot()[0].tag.endswith("authenticationSuccess"):
-                ideal = tree.getroot()[0][0].text
-                user = authenticate(remote_user=ideal)
+                username = tree.getroot()[0][0].text
+                if "-" not in username:
+                    username = "%s@ltu.se" % username
+                else:
+                    username = "%s@student.ltu.se" % username
+                user = authenticate(remote_user=username)
+                if not user:
+                    return HttpResponseRedirect("/?nope")
+                login(request, user)
+                return HttpResponseRedirect("/?")
+            else:
+                return HttpResponseRedirect("/?failed")
+
+class LuddLoginView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        casEndpoint = "https://vortex.ludd.ltu.se/cas"
+        ticket = request.GET.get("ticket")
+        service = "http://%s/login/ludd" % request.get_host()
+        if not ticket:
+            return HttpResponseRedirect("%s/login?service=%s" % (casEndpoint, service))
+        else:
+            res = urllib.request.urlopen("%s/serviceValidate?ticket=%s&service=%s" % (casEndpoint, ticket, service))
+            tree = etree.parse(res)
+            if tree.getroot()[0].tag.endswith("authenticationSuccess"):
+                username = tree.getroot()[0][0].text
+                username = "%s@ludd.ltu.se" % username
+                user = authenticate(remote_user=username)
                 if not user:
                     return HttpResponseRedirect("/?nope")
                 login(request, user)
@@ -37,9 +68,14 @@ class LoginView(TemplateView):
 
 
 class LogoutView(TemplateView):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
+        casEndpoint = "https://weblogon.ltu.se/cas"
+        service = "ltu"
+        if "ludd" in request.user.username:
+            casEndpoint = "https://vortex.ludd.ltu.se/cas"
+            service = "ludd"
         logout(request)
-        return HttpResponseRedirect("https://weblogon.ltu.se/cas/logout?service=http://%s" % request.get_host())
+        return HttpResponseRedirect("%s/logout?service=http://%s/login/%s" % (casEndpoint, request.get_host(), service))
 
 class QueueView(TemplateView):
     template_name = "app/queue.html"
