@@ -7,7 +7,7 @@
     <div class="col-sm-4">
         <h3>Statistics</h3>
         <p>
-            This course has a total of 0 attempts, where 0 of them were successful.
+	This course has a total of {{stats.submissions}} attempts by {{stats.users}} users.
         </p>
         <hr/>
         <div class="panel panel-primary">
@@ -25,7 +25,7 @@
     </div>
     <div class="col-sm-8">
         <h3>Problems</h3>
-        {% for problem in group.problems.all %}
+        {% for problem in problems %}
             <div class="panel panel-default">
                 <div class="panel-heading">
                     {{ problem.name }}
@@ -33,10 +33,10 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-xs-4">
-                            <h2 class="text-center">0<br/><small>Attempts</small></h2>
+			    <h2 class="text-center">{{problem.submissions}}<br/><small>Attempts</small></h2>
                         </div>
                         <div class="col-xs-4">
-                            <h2 class="text-center">0<br/><small>Users</small></h2>
+			     <h2 class="text-center">{{problem.users}}<br/><small>Users</small></h2>
                         </div>
                         <div class="col-xs-4">
                             <h2 class="text-center">0<br/><small>Sockerkaka</small></h2>

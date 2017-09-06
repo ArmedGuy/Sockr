@@ -10,6 +10,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.views.generic import TemplateView
 from django.db.models import Q
+from django.db.models.aggregates import Count
 import urllib.request
 from lxml import etree
 from app.models import *
@@ -40,6 +41,14 @@ class LogoutView(TemplateView):
         logout(request)
         return HttpResponseRedirect("https://weblogon.ltu.se/cas/logout?service=http://%s" % request.get_host())
 
+class QueueView(TemplateView):
+    template_name = "app/queue.html"
+    def get(self, request, *args, **kwargs):
+        queue = Submission.objects.exclude(state__in=['failed', 'passed']).order_by('submitted_time')
+        return render(request, self.template_name, {
+            'queue': queue
+        })
+
 class CoursesView(TemplateView):
     template_name = "app/courses.html"
     def get(self, request, *args, **kwargs):
@@ -50,19 +59,40 @@ class CoursesView(TemplateView):
 class CourseView(TemplateView):
     template_name = "app/course.html"
     def get(self, request, *args, **kwargs):
+        pg = ProblemGroup.objects.get(id=kwargs['group'])
+        problems = Problem.objects.filter(group=pg).annotate(
+                users=Count('submission__submitter', distinct=True),
+                submissions=Count('submission'))
+        tot_subs = 0
+        tot_users = 0
+        for p in problems:
+            tot_subs += p.submissions
+            tot_users += p.users
         return render(request, self.template_name, {
-            'group': ProblemGroup.objects.get(id=kwargs['group'])
+            'group': pg,
+            'problems': problems,
+            'stats': {
+                'submissions': tot_subs,
+                'users': tot_users
+            }
         })
 
 class ProblemView(TemplateView):
     template_name = "app/problem.html"
     def get(self, request, *args, **kwargs):
+        problem = Problem.objects.get(id=kwargs['problem'])
         submissions = []
+        num_subs = Submission.objects.filter(problem=problem).count()
+        num_win_subs = Submission.objects.filter(problem=problem).filter(state='passed').count()
         if request.user.is_authenticated:
-            submissions = Submission.objects.filter(submitter__id = request.user.id).order_by('-submitted_time')
+            submissions = Submission.objects.filter(submitter__id = request.user.id).filter(problem=problem).order_by('-submitted_time')
         return render(request, self.template_name, {
             'problem': Problem.objects.get(id=kwargs['problem']),
-            'submissions': submissions
+            'submissions': submissions,
+            'stats': {
+                'submissions': num_subs,
+                'successful': num_win_subs,
+            }
         })
 
 class SubmitView(TemplateView):

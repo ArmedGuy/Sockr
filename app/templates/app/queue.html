@@ -1,0 +1,36 @@
+{% extends "app/layout.html" %}
+{% block title %}Global queue{% endblock %}
+{% load markdown_deux_tags %}
+{% block content %}
+<h2>Global queue</h2>
+<hr/>
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Submitted</th>
+		    <th>Problem</th>
+		    <th>User</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if not queue|length %}
+                <tr><td colspan="5">Nothing in queue</td></tr>
+                {% endif %}
+                {% for s in queue %}
+                <tr>
+                    <td><a href="{% url 'submission' s.id %}">#{{ s.id }}</a></td>
+                    <td>{{ s.submitted_time }}</td>
+		    <td>{{ s.problem }}</td>
+		    <td>{{ s.submitter }}</td>
+                    <td>{{ s.get_html_state }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
